@@ -1,0 +1,34 @@
+version: '3.5'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NOTES_ENV=development
+      - FLASK_ENV=development
+      - MYSQL_HOST=database_proxy
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=Kudv45jlgf1rpBot #TODO
+      - MYSQL_DATABASE=accounts
+    ports:
+      - "6000:8080"
+    links:
+      - "database_proxy:database_proxy"
+    volumes:
+      - ./accounts_service:/app/accounts_service
+      - ./migrations:/app/migrations
+      - ./scripts:/app/scripts
+  
+  database_proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.19.1
+    command: /cloud_sql_proxy -instances=paul-personal-306310:europe-west2:notes=tcp:0.0.0.0:3306 -credential_file=/config/application_default_credentials.json
+    volumes:
+      - "${HOME}/.config/gcloud:/config"
+
+  mysql_cli:
+    image: mysql
+    links:
+      - "database_proxy:database_proxy"
+    command: mysql -hdatabase_proxy -uroot -pKudv45jlgf1rpBot accounts #TODO remove passsword
