@@ -7,13 +7,19 @@ GCR_IMAGE_URL=eu.gcr.io/paul-personal-306310/$(APPLICATION)
 build:
 	docker-compose build
 
+check_credentials:
+	docker run --rm \
+	  -v $(shell pwd)/scripts:/scripts \
+	  -v $(HOME)/.config/gcloud:/config \
+	  python:3.9.0-buster bash -c "python /scripts/check_credentials.py"
+
 console:
 	docker-compose run --rm --service-ports app bash
 
 mysql:
 	docker-compose run --rm mysql_cli
 
-run:
+run: check_credentials
 	docker-compose up app
 
 release:
